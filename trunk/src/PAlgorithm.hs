@@ -1,28 +1,64 @@
+--------------------------------------------------------------------------
+-- Module:      PAlgorithm
+-- Maintainer:  Carlos Colmenares
+--
+-- | Back-End operations for the 8 puzzle: Data structures, types, and
+-- functions for making operations on a board and calculating the shortest
+-- path from any state up to the goal state.
+--------------------------------------------------------------------------
 module PAlgorithm where
     import qualified Data.PurePriorityQueue as PQ
     import qualified Data.Array.Unboxed as UA
     import qualified Data.Set as S
+    import Data.List(intercalate, foldl')
 
-    import Data.List(intercalate)
-
-    --A position in the tab
+    -- | A position in the board, it will always be an
+    -- 'Int' in the range [0, 8] 
+    --
+    -- >  0 | 1 | 2
+    -- > -----------
+    -- >  3 | 4 | 5
+    -- > -----------
+    -- >  6 | 7 | 8
     type Pos = Int
 
-    --A coordinate in the Tab
+    -- | A coordinate of a position in the board, each
+    -- of the numbers will always be an 'Int' in the range
+    -- [0, 3]
+    --
+    -- >  (0,0) | (0,1) | (0,2)
+    -- > -----------------------
+    -- >  (1,0) | (1,1) | (1,2)
+    -- > -----------------------
+    -- >  (2,0) | (2,1) | (2,2)
     type Coord = (Int,Int)
 
-    --A token is a pair (cell# of tab, number of token)
+    -- | A token is a pair (Position, Number of token),
+    -- a token /(2,3)/ represents that the token number 3
+    -- is in the second position of the board.
     type Token = (Pos,Int)
 
-    newtype Board = Board { unBoard::[Token] }
+    -- | The representation of a board. It's a collection
+    -- of tokens (one for every position). This type will
+    -- be an instance of 'Eq', 'Ord' and 'Show'.
+    newtype Board = 
+        Board {
+            unBoard::[Token]    -- ^ List of tokens, a list is not the
+                                -- best structutre for this (swaping
+                                -- two elements is really uneficient)
+        }
         deriving(Eq)
 
+    -- | How to compare a board
     instance Ord Board where
         compare (Board x) (Board y) = compare x y
 
+    -- | How to show a board
     instance Show Board where
         show = showBoard
 
+    -- | Function for pretty printing a 'Board'. Used as
+    -- the 'show' function of a 'Board'
     showBoard :: Board -> String
     showBoard (Board tkL) = intercalate "\n" bdLines
         where
@@ -30,28 +66,34 @@ module PAlgorithm where
         bdLinesNum = map (map snd) bdLinesTok
         bdLines = map show bdLinesNum
 
-    --Initial board
+    -- | The initial 'Board' or goal 'Board'.
     initBoard :: Board
     initBoard = Board [ (i,i) | i <- [0..8] ]
 
-    --Definition of a node for the A*
+    -- | Definition of a node, used for the A* algorithm.
+    -- For debugging purposes, PNode will be instacne of
+    -- 'Show'.
     data PNode = PNode {
-        steps :: Int,   --The moves made for arriving to
-                        --this node in the A*
-        zeroPos :: Pos, --The position of the empty cell
-                        --in the board
-        board :: Board, --The board of the PNode
-        path :: [Shift] --The path followed to reach the state
+        steps :: Int,   -- ^ The moves made for arriving to
+                        -- this node in the A*
+        zeroPos :: Pos, -- ^ The position of the empty cell
+                        -- in the board, used for simplifying calculations
+        board :: Board, -- ^ The board of the PNode (Actual state)
+        path :: [Shift] -- ^ The path followed to reach this state
     }
+
+    -- | How to show a PNode
     instance Show PNode where
         show = showPNode
 
+    -- | Function for pretty printing a 'PNode'
+    showPNode :: PNode -> String
     showPNode (PNode s zp bd _) = (show bd) ++ "\n" ++ (show s) ++ " " ++ (show zp) ++ "\n"
     
 
-    -- Represents a move of a token to an empty cell
+    -- | Represents a move of a token to an empty cell
     data Shift = LeftS | RightS | UpS | DownS
-        deriving (Show)
+        deriving (Show, Enum)
 
     shiftToCoord :: Shift -> Coord
     shiftToCoord s = case s of
@@ -62,6 +104,14 @@ module PAlgorithm where
 
     type BPriorityQ = PQ.MinMaxQueue Int PNode
     type BSet = S.Set Board
+
+    -- | Takes a 'Shift' and returns its counterpart
+    mirror :: Shift -> Shift
+    mirror sh = case sh of
+        LeftS -> RightS
+        RightS -> LeftS
+        UpS -> DownS
+        DownS -> UpS
 
     manhattanH :: Board -> Int
     manhattanH bd = (sum . map dist) board
@@ -134,12 +184,41 @@ module PAlgorithm where
         sp = shiftPos zp sh
         swappedBd = boardSwap bd zp sp
 
+    -- | Applies the given shift to the board only if
+    -- possible
+    applyUserShift ::   Pos -- ^ The position of the empty cell in the board
+                        -> Board -- ^ The 'Board' where to apply the 'Shift'
+                        -> Shift -- ^ The 'Shift' to be applied
+                        -> (Pos, Board) -- ^ The resulting 'Board' and position
+                                        -- of the zero token
+    applyUserShift zp bd sh =
+        if isPossibleShift zp sh
+            then (applyShift_ zp bd sh)
+            else (zp, bd)
+
     isPossibleShift :: Pos -> Shift -> Bool
     isPossibleShift zp sh = inRange (xz+xsh) && inRange (yz+ysh)
         where
         (xsh, ysh) = shiftToCoord sh
         (xz, yz) = posToCoord zp
         inRange n = 0 <= n && n < 3
+
+    -- | Takes a list of random numbers in the range [0-3],
+    -- transforms it to shifts, and applies them to the board,
+    -- if the shift is not valid, it's reverse movement is
+    -- made instead
+    applyRandomShifts :: Pos -- ^ The position of the empty cell in the board
+                        -> Board -- ^ The 'Board' where to apply the 'Shift'
+                        -> [Int] -- ^ The list of random numbers
+                        -> (Pos, Board) -- ^ The resulting 'Board' and position
+                                        -- of the zero token
+    applyRandomShifts zp bd rlt = foldl' checkAndApply (zp, bd) shiftList
+        where
+        shiftList = map toEnum rlt
+        checkAndApply (pos, board) sh =
+            if isPossibleShift pos sh
+                then applyShift_ pos board sh
+                else applyShift_ pos board (mirror sh)
 
     shiftPos :: Pos -> Shift -> Pos
     shiftPos p sh = coordToPos (xp + xsh, yp + ysh)
