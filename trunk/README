@@ -38,13 +38,15 @@ whit the ones listed.
 - pure-priority-queue-0.14 (**)
 - GNU Make 3.81
 - hmake 3.14
+- Haddock version 2.6.0, (c) Simon Marlow 2006
 
 (*) You can get this package in this web-site:
     http://haskell.cs.yale.edu/graphics/
 
 (**) You can find this library in the 'lib' directory of the haskell
     8puzzle. For knowing how to install it, follow this link:
-    http://www.haskell.org/haskellwiki/Cabal/How_to_install_a_Cabal_package
+
+http://www.haskell.org/haskellwiki/Cabal/How_to_install_a_Cabal_package
 
 ---------------------------------------------------------------------
 (II) Compiling the 8-Puzzle
@@ -66,6 +68,14 @@ whit the ones listed.
     > make
 
     Then the haskell 8-puzzle will be automatically compiled.
+
+2.- For having the documentation of the haskell 8-puzzle, once in
+    the "alpha" directory, type the comand:
+
+    > make doc
+
+    The documentation will be written to the "doc" directory
+    in .html
 
 ---------------------------------------------------------------------
 (III) Testing the game
