@@ -10,7 +10,7 @@ module PAlgorithm where
     import qualified Data.PurePriorityQueue as PQ
     import qualified Data.Array.Unboxed as UA
     import qualified Data.Set as S
-    import Data.List(intercalate, foldl')
+    import Data.List(intercalate, foldl', find)
 
     -- | A position in the board, it will always be an
     -- 'Int' in the range [0, 8] 
@@ -45,7 +45,7 @@ module PAlgorithm where
         Board {
             unBoard::[Token]    -- ^ List of tokens, a list is not the
                                 -- best structutre for this (swaping
-                                -- two elements is really uneficient)
+                                -- two elements is really inefficient)
         }
         deriving(Eq)
 
@@ -60,7 +60,7 @@ module PAlgorithm where
     -- | Function for pretty printing a 'Board'. Used as
     -- the 'show' function of a 'Board'
     showBoard :: Board -> String
-    showBoard (Board tkL) = intercalate "\n" bdLines
+    showBoard (Board tkL) = (intercalate "\n" bdLines) ++ "\n"
         where
         bdLinesTok = take 3 [take 3 l| l <- iterate (drop 3) tkL]
         bdLinesNum = map (map snd) bdLinesTok
@@ -112,6 +112,13 @@ module PAlgorithm where
         RightS -> LeftS
         UpS -> DownS
         DownS -> UpS
+
+    -- | Takes a 'Board' and returns the position
+    -- of the empty cell
+    findZeroPos :: Board -> Pos
+    findZeroPos bd = fst x
+        where
+        Just x = find (\(a,b) -> b == 0) (unBoard bd)
 
     manhattanH :: Board -> Int
     manhattanH bd = (sum . map dist) board
@@ -227,7 +234,9 @@ module PAlgorithm where
         (xsh, ysh) = shiftToCoord sh
 
     boardSwap :: Board -> Pos -> Pos -> Board
-    boardSwap (Board bd) x y = Board nbd
+    boardSwap (Board bd) x y
+        | x == y = Board bd
+        | otherwise = Board nbd
         where
         nbd = bef ++ [(mini,maxiTk)] ++ med ++ [(maxi,miniTk)] ++ aft 
         (mini,maxi) = if x < y then (x,y) else (y,x)
@@ -236,7 +245,6 @@ module PAlgorithm where
         aft = drop (maxi + 1) bd
         (_,miniTk) = bd!!mini
         (_,maxiTk) = bd!!maxi
-
 
 
     solve :: Board -> Pos -> [Shift]
@@ -281,5 +289,23 @@ module PAlgorithm where
             (x:xs) -> showSequence newZp newBd xs
                 where
                 (newZp,newBd) = applyShift_ zp bd x
+
+
+    -- | Takes any board an calculates if the board can be solved
+    isSolvable :: Board -> Bool
+    isSolvable bd = totSum `mod` 2 == 0
+        where
+        totSum = calculateMinors $ unBoard bd
+
+    -- | given a token, counts the number of tokens that are
+    -- minor and ahead of him
+    calculateMinors :: [Token] -> Int
+    calculateMinors bd = case bd of
+        [] -> 0
+        (x:xs) -> actual + recursive
+            where
+            num = snd x
+            actual = sum $ map (\(a,b) -> if b /= 0 && num > b then 1 else 0) xs
+            recursive = (calculateMinors xs)
 
 
