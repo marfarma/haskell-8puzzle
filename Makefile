@@ -15,3 +15,6 @@ doc: src/*.hs
 
 clean:
 	rm bin/*.hi bin/*.o bin/Main
+
+cleandoc:
+	rm doc/*
