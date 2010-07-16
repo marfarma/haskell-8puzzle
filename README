@@ -21,7 +21,6 @@ SUMMARY:
 (II)    Compiling
 (III)   Testing the game
 (IV)    Further Information
-(V)     Lo que le falta al proyecto <--- Importante
 
 HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
 
@@ -80,35 +79,25 @@ whit the ones listed.
     > cd /tmp/h8puzzle
     > ./haskell-8puzzle 
 
+    For playing, you need to interact with the interface trough
+    the next keys:
+
+    (w) Shifts the token that's under the empty cell Up
+    (a) Shifts the token that's at the right the empty cell Left
+    (s) Shifts the token that's over the empty cell Down
+    (d) Shifts the token that's at the left the empty cell Right
+    (q) Quit the game
+    (r) Randomize the board; Make 100 random moves on the board
+    (e) Find the optimal solution to the 8puzzle, show it and
+        apply it to the board
+
 ---------------------------------------------------------------------
 (IV) Further Information
 ---------------------------------------------------------------------
 
-    If you are interested in CaEl or simply want to know any
-information about it's creator, feel free to send an email to any
-the following address:
+    If you are interested in the 8Puzzle or simply want to know any
+information about it's creator, feel free to send an email to
+the following email address:
 
 > carlos.a.colmenares.r@gmail.com
 
----------------------------------------------------------------------
-(V) Lo que le falta al proyecto
----------------------------------------------------------------------
-
-    Esta seccion esta escrita en espanol pues es una lista temporal
-que indica los puntos que faltan para finalizar el proyecto.
-
-- La documentacion del proyecto no existe actualmente, se documentaran
-  los modulos creados para poder utilizar Haddock.
-
-- La interfaz grafica del proyecto aun no sirve, la idea es lograr que
-  el usuario pueda jugar, obtener un tablero random, y solucionar el
-  tablero
-
-- Hace falta agregarle las pruebas con quickCheck
-
-- Hace falta optimizar aun mas el algoritmo, probablemente cambiando
-  la representacion de los 'Board' por una mas eficiente (un Mapa o un
-  entero, en el segundo caso, se usarian operaciones de bits)
-
-- Una vez que se completen los puntos anteriores, se le subira un
-  nivel al proyecto y se realizara un "haskell 15-puzzle".

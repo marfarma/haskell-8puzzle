@@ -5,7 +5,7 @@ module PGraphics where
     type Point = HGL.Point
 
     drawBoard :: HGL.Window -> HGL.Font -> A.Board -> IO ()
-    drawBoard w font bd = HGL.drawInWindow w bdGraphic 
+    drawBoard w font bd = HGL.setGraphic w bdGraphic 
         where
         bdGraphic = boardToGraphic bd font
 
