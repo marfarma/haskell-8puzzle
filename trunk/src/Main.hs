@@ -6,7 +6,6 @@ module Main where
     import System.Random( randomRIO ) 
 
     main = do
-        let (myInitP, myBoard) = testBoard
         HGL.runGraphics $
             do
             w <- HGL.openWindowEx "8puzzle" Nothing
@@ -19,7 +18,7 @@ module Main where
             HGL.closeWindow w
 
     -- | Draws the given board, takes a key from the std input and executes
-    -- the requested action
+    -- the requested action, then it "loops back" calling it self recursively
     drawAndLoop ::  HGL.Window  -- ^ The window where to draw stuff
                     -> HGL.Font -- ^ The font needed to draw in the window
                     -> ( A.Pos , A.Board)
@@ -95,20 +94,3 @@ module Main where
         drawAndLoop w font newState
 
 
-
-    --Test boards for the program
-    testBoard :: (A.Pos, A.Board) --The optimal solution for this board has 28 shifts
-    testBoard = foldl ff (0,A.initBoard) [A.UpS, A.UpS, A.LeftS, A.DownS, A.DownS,
-                                        A.LeftS, A.UpS, A.UpS, A.RightS, A.RightS,
-                                        A.DownS, A.LeftS, A.DownS, A.LeftS,A.UpS,
-                                        A.RightS,A.DownS,A.UpS,A.UpS,A.RightS,A.DownS,
-                                        A.LeftS,A.UpS,A.LeftS,A.DownS,A.RightS,
-                                        A.LeftS, A.DownS, A.RightS, A.UpS, A.RightS,
-                                        A.DownS, A.LeftS, A.UpS, A.UpS, A.RightS]
-        where
-        ff (zp,bd) sh = A.applyShift_ zp bd sh
-
-    testBoard2 :: (A.Pos, A.Board)--The optimal solution for this board has 19 shifts
-    testBoard2 = (1,A.Board bd)
-        where
-        bd = [(0,2),(1,0),(2,4),(3,5),(4,3),(5,8),(6,6),(7,1),(8,7)]
